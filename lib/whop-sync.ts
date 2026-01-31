@@ -38,7 +38,7 @@ export async function ensureWhopSync(userId: string, companyId: string) {
     await supabase.from("users").insert([{
       id: userId,
       username: whopUser.username || `user_${userId.slice(0, 5)}`,
-      avatar_url: whopUser.profile_picture_url
+      avatar_url: (whopUser as any).profile_picture_url || (whopUser as any).profile_pic_url || (whopUser as any).profile_picture
     }]);
 
     // Initialize progress

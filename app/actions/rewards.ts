@@ -4,17 +4,12 @@ import { headers } from "next/headers";
 import { getWhopSDK } from "@/lib/whop-sdk";
 import { assignmentService } from "@/lib/assignment-service";
 
-export async function checkAndSyncRewards() {
+export async function checkAndSyncRewards(companyId: string) {
   const sdk = getWhopSDK();
   const headersList = await headers();
   const { userId } = await sdk.verifyUserToken(headersList);
 
   if (!userId) return null;
-
-  const memberships = await sdk.authorizedUsers.list({ user_id: userId });
-  const companyId = memberships.data[0]?.company_id;
-  
-  if (!companyId) return null;
 
   // 1. Get current level and config
   const [progress, levels] = await Promise.all([

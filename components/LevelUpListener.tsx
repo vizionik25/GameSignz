@@ -38,7 +38,7 @@ export default function LevelUpListener({
             setNewLevel(currentLevel);
             
             // Sync rewards server-side
-            const result = await checkAndSyncRewards();
+            const result = await checkAndSyncRewards(companyId);
             if (result?.reward) {
               setReward(result.reward);
             }

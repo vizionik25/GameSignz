@@ -5,15 +5,27 @@ import Link from "next/link";
 import { ArrowLeft, Trophy, Medal, Star } from "lucide-react";
 import { redirect } from "next/navigation";
 
-export default async function LeaderboardPage() {
+export default async function LeaderboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ companyId?: string }>;
+}) {
   const sdk = getWhopSDK();
   const headersList = await headers();
   const { userId } = await sdk.verifyUserToken(headersList);
 
   if (!userId) redirect("/");
 
-  const memberships = await sdk.authorizedUsers.list({ user_id: userId });
-  const companyId = memberships.data[0]?.company_id || "demo_company";
+  const { companyId: queryCompanyId } = await searchParams;
+  const targetCompanyId = queryCompanyId || "demo_company";
+
+  // Verify membership
+  const memberships = await sdk.authorizedUsers.list({ 
+    user_id: userId,
+    company_id: targetCompanyId
+  });
+
+  const companyId = memberships.data.length > 0 ? targetCompanyId : "demo_company";
 
   const leaderboard = await leaderboardService.getLeaderboard(companyId);
 

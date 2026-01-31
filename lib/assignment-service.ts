@@ -11,7 +11,14 @@ export interface Comment {
   };
 }
 
-// ... existing interfaces ...
+export interface LevelConfig {
+  id: string;
+  company_id: string;
+  level_number: number;
+  xp_required: number;
+  reward_name: string;
+}
+
 export interface Assignment {
   id: string;
   title: string;
@@ -187,5 +194,20 @@ export const assignmentService = {
       totalAssignments: totalAssignments || 0,
       totalUsers: totalUsers || 0,
     };
+  },
+
+  async createComment(comment: {
+    assignment_id: string;
+    user_id: string;
+    content: string;
+  }) {
+    const { data, error } = await supabase
+      .from("comments")
+      .insert([comment])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
   },
 };

@@ -14,8 +14,7 @@ export async function submitAssignment(prevState: any, formData: FormData) {
     throw new Error("Unauthorized");
   }
 
-  const memberships = await sdk.authorizedUsers.list({ user_id: userId });
-  const companyId = memberships.data[0]?.company_id || "demo_company";
+  const companyId = formData.get("companyId") as string || "demo_company";
 
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;

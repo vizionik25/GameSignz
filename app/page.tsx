@@ -5,11 +5,52 @@ import { assignmentService } from "@/lib/assignment-service";
 import Link from "next/link";
 import { MessageSquare, Trophy } from "lucide-react";
 import VoteButtons from "@/components/VoteButtons";
+import { redirect } from "next/navigation";
 
 import LevelUpListener from "@/components/LevelUpListener";
 
-export default async function HomePage() {
-  // ... existing code ...
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ companyId?: string }>;
+}) {
+  const sdk = getWhopSDK();
+  const headersList = await headers();
+  const { userId } = await sdk.verifyUserToken(headersList);
+
+  if (!userId) {
+    // For demo purposes, maybe we don't redirect if it's a public view?
+    // But verifyUserToken suggests auth is required.
+    // If we are outside whop, headers might be missing.
+    // Let's redirect to a login page or just show unauthorized if strict.
+    // But for this assignment app, let's assume strict auth.
+    // redirect("/login"); // or similar
+    // For now, let's just return logic handling "no user".
+    // But the rest of code expects userId.
+    // If we are developing locally, maybe we mock it?
+    // But whop-sdk checks headers.
+    return (
+        <div className="p-8 text-center">
+            <h1 className="text-2xl font-bold">Authentication Required</h1>
+            <p>Please open this app within Whop.</p>
+        </div>
+    );
+  }
+
+  const { companyId: queryCompanyId } = await searchParams;
+  const targetCompanyId = queryCompanyId || "demo_company";
+  
+  // Verify membership
+  const memberships = await sdk.authorizedUsers.list({ 
+    user_id: userId,
+    company_id: targetCompanyId
+  });
+
+  const companyId = memberships.data.length > 0 ? targetCompanyId : "demo_company";
+
+  // Sync user to our DB
+  await ensureWhopSync(userId, companyId);
+
   const [assignments, progress] = await Promise.all([
     assignmentService.getAssignments(companyId),
     assignmentService.getUserProgress(userId, companyId)

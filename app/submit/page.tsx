@@ -4,9 +4,12 @@ import { useActionState } from "react";
 import { submitAssignment } from "./actions";
 import Link from "next/link";
 import { ArrowLeft, Upload } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export default function SubmitPage() {
   const [state, formAction, isPending] = useActionState(submitAssignment, null);
+  const searchParams = useSearchParams();
+  const companyId = searchParams.get("companyId") || "demo_company";
 
   return (
     <main className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-8">
@@ -25,6 +28,7 @@ export default function SubmitPage() {
           </h1>
 
           <form action={formAction} className="space-y-6">
+            <input type="hidden" name="companyId" value={companyId} />
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Assignment Title

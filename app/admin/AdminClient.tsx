@@ -32,12 +32,12 @@ export default function AdminPage({
   const handleAddLevel = () => {
     const nextLevel = levels.length > 0 ? levels[levels.length - 1].level_number + 1 : 1;
     const nextXp = levels.length > 0 ? levels[levels.length - 1].xp_required + 500 : 100;
-    setLevels([...levels, { level_number: nextLevel, xp_required: nextXp, reward_name: "New Reward" }]);
+    setLevels([...levels, { level_number: nextLevel, xp_required: nextXp, reward_name: "New Reward", company_id: companyId }]);
   };
 
   const onSave = () => {
     startTransition(async () => {
-      await saveLevels(levels);
+      await saveLevels(companyId, levels);
       setShowSaved(true);
       setTimeout(() => setShowSaved(false), 3000);
     });

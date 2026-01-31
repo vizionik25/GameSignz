@@ -6,15 +6,32 @@ import { redirect } from "next/navigation";
 
 import AdminStats from "./AdminStats";
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ companyId?: string }>;
+}) {
   const sdk = getWhopSDK();
   const headersList = await headers();
   const { userId } = await sdk.verifyUserToken(headersList);
 
   if (!userId) redirect("/");
 
-  const memberships = await sdk.authorizedUsers.list({ user_id: userId });
-  const companyId = memberships.data[0]?.company_id || "demo_company";
+  const { companyId: queryCompanyId } = await searchParams;
+  const targetCompanyId = queryCompanyId || "demo_company";
+
+  // Verify membership/admin status
+  const memberships = await sdk.authorizedUsers.list({ 
+    user_id: userId,
+    company_id: targetCompanyId
+  });
+  
+  // If we found a specific company but user is not authorized, redirect
+  if (targetCompanyId !== "demo_company" && memberships.data.length === 0) {
+    redirect("/");
+  }
+
+  const companyId = targetCompanyId;
 
   const [initialLevels, stats] = await Promise.all([
     assignmentService.getLevelConfigs(companyId),
